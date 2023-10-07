@@ -3,7 +3,7 @@ import mysql.connector
 from fuzzywuzzy import fuzz
 
 # Initialize OpenAI API with your API key
-openai.api_key = "YOUR_OPENAI_API_KEY"
+openai.api_key = "lvYdYTgJTO6EcrWUf1ECT3BlbkFJIgBcPnMbQULoi4HbHIhD"
 
 # Function to paraphrase user input using OpenAI's API
 def paraphrase_text(text):
