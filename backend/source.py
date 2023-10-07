@@ -3,7 +3,7 @@ import mysql.connector
 import base64
 
 # Initialize OpenAI API with your API key
-openai.api_key = "YOUR_OPENAI_API_KEY"
+openai.api_key = "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"
 
 # Function to paraphrase user input using OpenAI's API
 def paraphrase_text(text):
