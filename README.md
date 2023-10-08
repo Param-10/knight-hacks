@@ -69,9 +69,6 @@ The application uses CORS to allow requests from the frontend. In app.py, the CO
 You can customize the chatbot's responses and conversation flow by modifying the chatbot_response function in app.py.
 Adjust the MAX_REQUESTS_PER_MINUTE variable in script.js to match your subscription level with OpenAI.
 
-## License
-This project is licensed under the MIT License - see the LICENSE file for details.
-
 ## Acknowledgments
 This project was created using Flask and OpenAI's GPT-3.5-turbo model.
 Special thanks to the Flask and OpenAI communities for their contributions and support.
