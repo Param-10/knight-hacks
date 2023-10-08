@@ -19,12 +19,14 @@ Before running the application, ensure you have the following prerequisites inst
   ```bash
   pip install flask
   
-OpenAI Python Client: Install the OpenAI Python client library using pip:
-pip install openai
+OpenAI Python Client: Install the OpenAI Python client library using `pip`:
+  ```bash
+  pip install openai
+```
 
 ## Getting Started
 Clone this repository to your local machine:
-git clone https://github.com/your-username/chatbot-app.git
+`git clone https://github.com/your-username/chatbot-app.git`
 
 Navigate to the project directory:
 cd chatbot-app
