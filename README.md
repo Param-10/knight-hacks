@@ -26,10 +26,13 @@ OpenAI Python Client: Install the OpenAI Python client library using `pip`:
 
 ## Getting Started
 Clone this repository to your local machine:
-`git clone https://github.com/your-username/chatbot-app.git`
-
+```bash
+git clone https://github.com/your-username/chatbot-app.git
+```
 Navigate to the project directory:
+```bash
 cd chatbot-app
+```
 
 ## Set up your OpenAI API key:
 
@@ -41,7 +44,9 @@ Prepare the lawyer and case data:
 Create two JSON files: lawyer_database.json and case_database.json.
 Populate these files with your lawyer and case data in the respective formats.
 Run the Flask application:
+```bash
 python app.py
+```
 The Flask application will start and listen on http://localhost:5000.
 
 ## Usage
