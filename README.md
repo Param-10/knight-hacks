@@ -1,4 +1,5 @@
-# knight-hacks
+# knight-hacks 
+#LawyerUP
 # Chatbot Application with Flask and OpenAI GPT-3.5-turbo
 
 This is a simple chatbot application that uses the Flask framework and OpenAI's GPT-3.5-turbo model to provide responses to user queries. The chatbot assists users in finding lawyers based on their case type.
@@ -28,7 +29,7 @@ git clone https://github.com/your-username/chatbot-app.git
 Navigate to the project directory:
 cd chatbot-app
 
-# Set up your OpenAI API key:
+## Set up your OpenAI API key:
 
 Create an account on the OpenAI platform.
 Generate an API key from the OpenAI platform.
