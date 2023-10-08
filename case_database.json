@@ -1,0 +1,114 @@
+[
+    {
+      "Case ID": 1,
+      "Case Type": "Divorce",
+      "Description": "Legal dissolution of marriage.",
+      "Relevant Questions": [
+        "Do you and your spouse have children?",
+        "Have you and your spouse reached an agreement on asset division?",
+        "Are there any issues related to child custody?"
+      ],
+      "Recommended Lawyer ID": [10]
+    },
+    {
+      "Case ID": 2,
+      "Case Type": "DUI (Driving Under the Influence)",
+      "Description": "Legal case related to driving under the influence of alcohol or drugs.",
+      "Relevant Questions": [
+        "Were you arrested for DUI?",
+        "What was your blood alcohol content (BAC) at the time of arrest?",
+        "Do you have prior DUI convictions?"
+      ],
+      "Recommended Lawyer ID": [1]
+    },
+    {
+      "Case ID": 3,
+      "Case Type": "Immigration",
+      "Description": "Legal matters related to immigration status and visas.",
+      "Relevant Questions": [
+        "What is your current immigration status?",
+        "Are you seeking a family-based or employment-based visa?",
+        "Have you ever been deported or denied entry to the U.S.?"
+      ],
+      "Recommended Lawyer ID": [7]
+    },
+    {
+      "Case ID": 4,
+      "Case Type": "Personal Injury",
+      "Description": "Legal cases involving bodily harm or injury due to someone else's negligence.",
+      "Relevant Questions": [
+        "How were you injured?",
+        "Do you have medical records related to your injury?",
+        "Have you spoken to any insurance companies about the incident?"
+      ],
+      "Recommended Lawyer ID": [8]
+    },
+    {
+      "Case ID": 5,
+      "Case Type": "Criminal Defense",
+      "Description": "Legal defense in criminal cases, such as theft or assault.",
+      "Relevant Questions": [
+        "What are the charges against you?",
+        "Were you arrested or charged with a misdemeanor or felony?",
+        "Do you have any witnesses or evidence to support your defense?"
+      ],
+      "Recommended Lawyer ID": [11]
+    },
+    {
+      "Case ID": 6,
+      "Case Type": "Family Law",
+      "Description": "Legal matters related to family issues, including divorce and child custody.",
+      "Relevant Questions": [
+        "Are you married and seeking a divorce?",
+        "Do you need assistance with child custody arrangements?",
+        "Have you and your spouse reached any agreements regarding property division?"
+      ],
+      "Recommended Lawyer ID": [16]
+    },
+    {
+      "Case ID": 7,
+      "Case Type": "Estate Planning",
+      "Description": "Legal matters related to wills, trusts, and estate management.",
+      "Relevant Questions": [
+        "Do you have a will or trust in place?",
+        "Are you interested in minimizing estate taxes?",
+        "Do you want to appoint a guardian for your children?"
+      ],
+      "Recommended Lawyer ID": [9]
+    },
+    {
+      "Case ID": 8,
+      "Case Type": "Business Law",
+      "Description": "Legal issues involving business contracts, partnerships, and disputes.",
+      "Relevant Questions": [
+        "Are you involved in a business contract dispute?",
+        "Do you need assistance with business formation?",
+        "Have you received a cease and desist letter?"
+      ],
+      "Recommended Lawyer ID": [14]
+    },
+    {
+      "Case ID": 9,
+      "Case Type": "Employment Law",
+      "Description": "Legal matters related to employment contracts, discrimination, and wrongful termination.",
+      "Relevant Questions": [
+        "Have you been wrongfully terminated?",
+        "Do you have an employment contract in place?",
+        "Have you experienced workplace discrimination?"
+      ],
+      "Recommended Lawyer ID":[4]
+    },
+    {
+      "Case ID": 10,
+      "Case Type": "Medical Malpractice",
+      "Description": "Legal cases involving negligence by healthcare professionals.",
+      "Relevant Questions": [
+        "What kind of medical procedure resulted in harm or injury?",
+        "Do you have medical records to support your case?",
+        "Have you spoken to the healthcare provider about the incident?"
+      ],
+      "Recommended Lawyer ID": [8]
+    }
+   
+  ]
+  

@@ -1,0 +1,203 @@
+[
+    {
+      "Lawyer ID": 1,
+      "Lawyer's Name": "John Smith",
+      "Contact Information": {
+        "Email": "john.smith@example.com",
+        "Phone": "555-123-4567"
+      },
+      "Areas of Expertise": ["Criminal Defense"],
+      "Experience": 12
+    },
+    {
+      "Lawyer ID": 2,
+      "Lawyer's Name": "Jane Doe",
+      "Contact Information": {
+        "Email": "jane.doe@example.com",
+        "Phone": "555-987-6543"
+      },
+      "Areas of Expertise":["Family Law"],
+      "Experience": 10
+    },
+    {
+      "Lawyer ID": 3,
+      "Lawyer's Name": "Robert Johnson",
+      "Contact Information": {
+        "Email": "robert.johnson@example.com",
+        "Phone": "555-234-5678"
+      },
+      "Areas of Expertise": ["Criminal Defense"],
+      "Experience": 15
+    },
+    {
+      "Lawyer ID": 4,
+      "Lawyer's Name": "Emily Anderson",
+      "Contact Information": {
+        "Email": "emily.anderson@example.com",
+        "Phone": "555-345-6789"
+      },
+      "Areas of Expertise": ["Personal Injury"],
+      "Experience": 8
+    },
+    {
+      "Lawyer ID": 5,
+      "Lawyer's Name": "Michael Wilson",
+      "Contact Information": {
+        "Email": "michael.wilson@example.com",
+        "Phone": "555-456-7890"
+      },
+      "Areas of Expertise": ["Real Estate Law"],
+      "Experience": 20
+    },
+    {
+      "Lawyer ID": 6,
+      "Lawyer's Name": "Sarah Davis",
+      "Contact Information": {
+        "Email": "sarah.davis@example.com",
+        "Phone": "555-567-8901"
+      },
+      "Areas of Expertise": ["Family Law"],
+      "Experience": 9
+    },
+    {
+      "Lawyer ID": 7,
+      "Lawyer's Name": "David Brown",
+      "Contact Information": {
+        "Email": "david.brown@example.com",
+        "Phone": "555-678-9012"
+      },
+      "Areas of Expertise": ["Immigration Law"],
+      "Experience": 18
+    },
+    {
+      "Lawyer ID": 8,
+      "Lawyer's Name": "Jennifer Miller",
+      "Contact Information": {
+        "Email": "jennifer.miller@example.com",
+        "Phone": "555-789-0123"
+      },
+      "Areas of Expertise": ["Personal Injury"],
+      "Experience": 13
+    },
+    {
+      "Lawyer ID": 9,
+      "Lawyer's Name": "Daniel White",
+      "Contact Information": {
+        "Email": "daniel.white@example.com",
+        "Phone": "555-890-1234"
+      },
+      "Areas of Expertise": ["Real Estate Law"],
+      "Experience": 14
+    },
+    {
+      "Lawyer ID": 10,
+      "Lawyer's Name": "Lisa Martinez",
+      "Contact Information": {
+        "Email": "lisa.martinez@example.com",
+        "Phone": "555-901-2345"
+      },
+      "Areas of Expertise": ["Family Law"],
+      "Experience": 11
+    },
+    {
+      "Lawyer ID": 11,
+      "Lawyer's Name": "William Taylor",
+      "Contact Information": {
+        "Email": "william.taylor@example.com",
+        "Phone": "555-012-3456"
+      },
+      "Areas of Expertise": ["Criminal Defense"],
+      "Experience": 16
+    },
+    {
+      "Lawyer ID": 12,
+      "Lawyer's Name": "Linda Harris",
+      "Contact Information": {
+        "Email": "linda.harris@example.com",
+        "Phone": "555-123-4567"
+      },
+      "Areas of Expertise": ["Divorce Law"],
+      "Experience": 9
+    },
+    {
+      "Lawyer ID": 13,
+      "Lawyer's Name": "James Wilson",
+      "Contact Information": {
+        "Email": "james.wilson@example.com",
+        "Phone": "555-234-5678"
+      },
+      "Areas of Expertise": ["Personal Injury"],
+      "Experience": 12
+    },
+    {
+      "Lawyer ID": 14,
+      "Lawyer's Name": "Karen Lewis",
+      "Contact Information": {
+        "Email": "karen.lewis@example.com",
+        "Phone": "555-345-6789"
+      },
+      "Areas of Expertise": ["Real Estate Law"],
+      "Experience": 17
+    },
+    {
+      "Lawyer ID": 15,
+      "Lawyer's Name": "Richard Turner",
+      "Contact Information": {
+        "Email": "richard.turner@example.com",
+        "Phone": "555-456-7890"
+      },
+      "Areas of Expertise": ["Criminal Defense"],
+      "Experience": 14
+    },
+    {
+      "Lawyer ID": 16,
+      "Lawyer's Name": "Susan Young",
+      "Contact Information": {
+        "Email": "susan.young@example.com",
+        "Phone": "555-567-8901"
+      },
+      "Areas of Expertise": ["Family Law"],
+      "Experience": 10
+    },
+    {
+      "Lawyer ID": 17,
+      "Lawyer's Name": "Matthew Scott",
+      "Contact Information": {
+        "Email": "matthew.scott@example.com",
+        "Phone": "555-678-9012"
+      },
+      "Areas of Expertise": ["Real Estate Law"],
+      "Experience": 19
+    },
+    {
+      "Lawyer ID": 18,
+      "Lawyer's Name": "Laura Adams",
+      "Contact Information": {
+        "Email": "laura.adams@example.com",
+        "Phone": "555-789-0123"
+      },
+      "Areas of Expertise": ["Personal Injury"],
+      "Experience": 13
+    },
+    {
+      "Lawyer ID": 19,
+      "Lawyer's Name": "Brian Foster",
+      "Contact Information": {
+        "Email": "brian.foster@example.com",
+        "Phone": "555-890-1234"
+      },
+      "Areas of Expertise": ["Criminal Defense"],
+      "Experience": 15
+    },
+    {
+      "Lawyer ID": 20,
+      "Lawyer's Name": "Mary Turner",
+      "Contact Information": {
+        "Email": "mary.turner@example.com",
+        "Phone": "555-901-2345"
+      },
+      "Areas of Expertise": ["Family Law"],
+      "Experience": 11
+    }
+  ]
+  
