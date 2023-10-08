@@ -2,10 +2,10 @@
 # LawyerUP 
   ### This is our hackathon submission for the Morgan&Morgan Challenge.
   ### Team Members:
-  #### Mohammad Aatif Sheikh
-  #### Naman Seghal
-  #### Kanishk Singh Chauhan
-  #### Paramveer Singh Bhele
+  #### 1. Mohammad Aatif Sheikh
+  #### 2. Naman Seghal
+  #### 3. Kanishk Singh Chauhan
+  #### 4. Paramveer Singh Bhele
 # Chatbot Application with Flask and OpenAI GPT-3.5-turbo
 
 This is a simple chatbot application that uses the Flask framework and OpenAI's GPT-3.5-turbo model to provide responses to user queries. The chatbot assists users in finding lawyers based on their case type.
