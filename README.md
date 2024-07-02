@@ -3,7 +3,7 @@
   ### This is our hackathon submission for the Morgan&Morgan Challenge.
   ### Team Members:
   #### 1. Mohammad Aatif Sheikh
-  #### 2. Naman Seghal
+  #### 2. Naman Sehgal
   #### 3. Kanishk Singh Chauhan
   #### 4. Paramveer Singh Bhele
 # Chatbot Application with Flask and OpenAI GPT-3.5-turbo
