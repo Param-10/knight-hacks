@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% set is_signup = mode == "signup" %}
+{% block title %}{{ "Create account" if is_signup else "Login" }} | LawyerUP{% endblock %}
+{% block body_class %}auth-page{% endblock %}
+
+{% block content %}
+  <main id="main" class="auth-shell">
+    <section class="auth-copy">
+      <a class="brand-mark" href="{{ url_for('landing') }}">
+        <span>LU</span>
+        <strong>LawyerUP</strong>
+      </a>
+      <h1>{{ "Create your intake workspace." if is_signup else "Welcome back." }}</h1>
+      <p>
+        Review matters through the multi-agent pipeline and keep your recent intake work scoped to your account.
+      </p>
+    </section>
+
+    <section class="auth-card" aria-labelledby="auth-title">
+      <p class="micro-label">{{ "Signup" if is_signup else "Login" }}</p>
+      <h2 id="auth-title">{{ "Start a workspace" if is_signup else "Sign in" }}</h2>
+      <form method="post" class="stacked-form" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+        {% if is_signup %}
+          <label>
+            Name
+            <input name="name" autocomplete="name" required minlength="2" maxlength="80" />
+          </label>
+          <label>
+            Organization
+            <input name="organization" autocomplete="organization" maxlength="120" />
+          </label>
+        {% endif %}
+        <label>
+          Email
+          <input name="email" type="email" autocomplete="email" required maxlength="254" />
+        </label>
+        <label>
+          Password
+          <input
+            name="password"
+            type="password"
+            autocomplete="{{ 'new-password' if is_signup else 'current-password' }}"
+            required
+            minlength="12"
+            maxlength="256"
+          />
+        </label>
+        <button class="primary-button full-width" type="submit">
+          {{ "Create account" if is_signup else "Login" }}
+        </button>
+      </form>
+      <p class="auth-switch">
+        {% if is_signup %}
+          Already have an account? <a href="{{ url_for('login') }}">Login</a>
+        {% else %}
+          New to LawyerUP? <a href="{{ url_for('signup') }}">Create account</a>
+        {% endif %}
+      </p>
+    </section>
+  </main>
+{% endblock %}

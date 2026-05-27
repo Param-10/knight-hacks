@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}LawyerUP | Multi-agent legal intake{% endblock %}
+{% block body_class %}landing-page{% endblock %}
+
+{% block content %}
+  <header class="marketing-nav">
+    <a class="brand-mark" href="{{ url_for('landing') }}" aria-label="LawyerUP home">
+      <span>LU</span>
+      <strong>LawyerUP</strong>
+    </a>
+    <nav aria-label="Primary">
+      <a href="#system">System</a>
+      <a href="#workflow">Workflow</a>
+      <a href="{{ url_for('login') }}">Login</a>
+      <a class="nav-cta" href="{{ url_for('signup') }}">Start intake</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero-section">
+      <div class="hero-copy">
+        <p class="micro-label">Multi-agent legal intake</p>
+        <h1>Legal intake that thinks in teams.</h1>
+        <p>
+          LawyerUP routes messy client stories through coordinated Gemini agents,
+          structured triage, and auditable attorney matching.
+        </p>
+        <div class="hero-actions">
+          <a class="primary-button" href="{{ url_for('signup') }}">Create workspace</a>
+          <a class="text-link" href="{{ url_for('login') }}">I have an account</a>
+        </div>
+      </div>
+      <div class="hero-product" aria-label="Interactive product demo">
+        <div class="window-bar">
+          <span></span><span></span><span></span>
+          <strong>matter-demo.lawyerup</strong>
+        </div>
+        <div class="demo-layout">
+          <nav class="demo-steps" aria-label="Demo steps">
+            <button class="active" type="button" data-demo-trigger="intake">
+              <span>01</span>
+              <strong>Capture</strong>
+              <small>Paste the client story.</small>
+            </button>
+            <button type="button" data-demo-trigger="agents">
+              <span>02</span>
+              <strong>Coordinate</strong>
+              <small>Run agents in parallel.</small>
+            </button>
+            <button type="button" data-demo-trigger="review">
+              <span>03</span>
+              <strong>Review</strong>
+              <small>Route the matter cleanly.</small>
+            </button>
+          </nav>
+
+          <div class="demo-stage">
+            <article class="demo-panel demo-panel-intake active" data-demo-panel="intake">
+              <div class="demo-toolbar">
+                <span>New matter</span>
+                <small>2,184 characters</small>
+              </div>
+              <div class="demo-note">
+                <p>
+                  I was rear-ended near Orlando last week. The other driver admitted fault,
+                  my neck still hurts, and their insurance adjuster keeps calling me.
+                </p>
+                <span class="typing-cursor"></span>
+              </div>
+              <div class="demo-tags">
+                <span>auto collision</span>
+                <span>insurance contact</span>
+                <span>medical follow-up</span>
+              </div>
+              <button class="primary-button demo-next" type="button" data-demo-trigger="agents">Run agents</button>
+            </article>
+
+            <article class="demo-panel demo-panel-agents" data-demo-panel="agents">
+              <div class="demo-panel-heading">
+                <div>
+                  <span class="micro-label">Parallel run</span>
+                  <h3>Coordinated review in progress.</h3>
+                </div>
+                <small>Gemini 3.5 Flash</small>
+              </div>
+              <div class="agent-lanes" aria-label="Parallel agent lanes">
+                <div class="agent-lane agent-lane-primary">
+                  <span>IntakeAgent</span>
+                  <strong>Brief ready</strong>
+                  <small>Facts, matter type, and missing context are separated first.</small>
+                </div>
+                <div class="agent-lane">
+                  <span>TriageAgent</span>
+                  <strong>Priority set</strong>
+                  <small>Urgency and follow-up questions are prepared for review.</small>
+                </div>
+                <div class="agent-lane">
+                  <span>AttorneyMatch</span>
+                  <strong>3 sample matches</strong>
+                  <small>Local records are scored against matter fit and availability.</small>
+                </div>
+                <div class="agent-lane">
+                  <span>Subagents</span>
+                  <strong>2 focused lanes</strong>
+                  <small>Deadline and evidence checks run beside the main response.</small>
+                </div>
+              </div>
+              <div class="demo-progress" aria-hidden="true"><span></span></div>
+              <button class="secondary-button demo-next" type="button" data-demo-trigger="review">See review</button>
+            </article>
+
+            <article class="demo-panel demo-panel-review" data-demo-panel="review">
+              <div class="review-packet">
+                <div class="review-header">
+                  <span class="micro-label">Matter snapshot</span>
+                  <h3>Personal injury</h3>
+                  <div class="review-metrics" aria-label="Matter routing metrics">
+                    <span><strong>95%</strong> confidence</span>
+                    <span><strong>Same-day</strong> priority</span>
+                  </div>
+                </div>
+                <p class="review-summary">
+                  Rear-end collision near Orlando with ongoing neck pain, insurance outreach,
+                  and a clear need for medical follow-up.
+                </p>
+                <div class="review-columns">
+                  <div class="review-card-mini">
+                    <span>Questions</span>
+                    <ul>
+                      <li>Any ER, urgent care, or primary care visit?</li>
+                      <li>Photos, claim number, or police report available?</li>
+                    </ul>
+                  </div>
+                  <div class="review-card-mini">
+                    <span>Attorney matches</span>
+                    <ul>
+                      <li>Maya Srinivasan</li>
+                      <li>Noah Bennett</li>
+                      <li>Avery Stone</li>
+                    </ul>
+                  </div>
+                </div>
+                <a class="primary-button demo-next" href="{{ url_for('signup') }}">Create workspace</a>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="system" class="section-band">
+      <div class="section-heading">
+        <p class="micro-label">System</p>
+        <h2>A real agent pipeline, not one giant prompt.</h2>
+      </div>
+      <div class="feature-grid">
+        <article>
+          <span>01</span>
+          <h3>Intake classification</h3>
+          <p>Extracts matter type, urgency, facts, missing information, and confidence from the client story.</p>
+        </article>
+        <article>
+          <span>02</span>
+          <h3>Parallel review</h3>
+          <p>Triage, attorney matching, and subagent coordination run in parallel after the brief is created.</p>
+        </article>
+        <article>
+          <span>03</span>
+          <h3>Spawned subagents</h3>
+          <p>Deadline and evidence subagents produce focused checklists that the response agent can use.</p>
+        </article>
+        <article>
+          <span>04</span>
+          <h3>Grounded matching</h3>
+          <p>Attorney recommendations come from local records and scoring, so the model does not invent lawyers.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="workflow" class="section-band workflow-band">
+      <div class="section-heading">
+        <p class="micro-label">Workflow</p>
+        <h2>From raw story to reviewed intake packet.</h2>
+      </div>
+      <div class="workflow-list">
+        <div>
+          <strong>Capture the story</strong>
+          <p>Collect dates, documents, injuries, notices, insurance contact, and court context in one focused workspace.</p>
+        </div>
+        <div>
+          <strong>Separate the work</strong>
+          <p>Classification, triage, attorney matching, deadline signals, and evidence requests each get their own agent lane.</p>
+        </div>
+        <div>
+          <strong>Keep a record</strong>
+          <p>Every saved matter keeps the brief, trace, sample matches, and client-ready note available from the dashboard.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='landing.js') }}" defer></script>
+{% endblock %}

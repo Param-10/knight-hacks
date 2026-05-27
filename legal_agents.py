@@ -3,12 +3,19 @@ from __future__ import annotations
 import json
 import os
 import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 
 DEFAULT_MODEL = "gemini-3.5-flash"
+
+
+class AgentExecutionError(RuntimeError):
+    def __init__(self, feature: str, message: str) -> None:
+        super().__init__(message)
+        self.feature = feature
 
 
 STOPWORDS = {
@@ -140,29 +147,15 @@ CASE_ALIASES = {
         "trust",
         "will",
     ],
-}
-
-
-URGENCY_KEYWORDS = {
-    "high": [
-        "arrested",
-        "court date",
-        "deadline",
-        "deported",
+    "Real Estate Law": [
+        "closing",
         "eviction",
-        "hospital",
-        "served",
-        "trial",
-        "warrant",
-    ],
-    "medium": [
-        "charged",
-        "fired",
-        "insurance",
-        "injured",
-        "letter",
-        "police",
-        "terminated",
+        "landlord",
+        "lease",
+        "property",
+        "real estate",
+        "tenant",
+        "title",
     ],
 }
 
@@ -173,8 +166,9 @@ class AgentStep:
     role: str
     status: str
     summary: str
-    used_model: bool = False
+    used_model: bool = True
     details: Dict[str, Any] = field(default_factory=dict)
+    children: List["AgentStep"] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -184,6 +178,7 @@ class AgentStep:
             "summary": self.summary,
             "used_model": self.used_model,
             "details": self.details,
+            "children": [child.to_dict() for child in self.children],
         }
 
 
@@ -255,7 +250,7 @@ class GeminiGateway:
         self,
         model: Optional[str] = None,
         api_key: Optional[str] = None,
-        temperature: float = 0.25,
+        temperature: float = 0.22,
     ) -> None:
         self.model = model or os.getenv("GEMINI_MODEL", DEFAULT_MODEL)
         self.api_key = api_key or os.getenv("GEMINI_API_KEY")
@@ -266,35 +261,33 @@ class GeminiGateway:
     def configured(self) -> bool:
         return bool(self.api_key)
 
-    def generate_text(self, prompt: str) -> Optional[str]:
-        return self._generate(prompt, json_mode=False)
+    def generate_text(self, feature: str, prompt: str) -> str:
+        return self._generate(feature, prompt, json_mode=False)
 
-    def generate_json(self, prompt: str) -> Optional[Dict[str, Any]]:
-        text = self._generate(prompt, json_mode=True)
-        if not text:
-            return None
-        return parse_json_text(text)
+    def generate_json(self, feature: str, prompt: str) -> Dict[str, Any]:
+        text = self._generate(feature, prompt, json_mode=True)
+        parsed = parse_json_text(text)
+        if parsed is None:
+            raise AgentExecutionError(feature, f"{feature} returned malformed JSON.")
+        return parsed
 
-    def _generate(self, prompt: str, json_mode: bool) -> Optional[str]:
+    def _generate(self, feature: str, prompt: str, json_mode: bool) -> str:
         if not self.api_key:
-            return None
+            raise AgentExecutionError(feature, "Gemini is not configured. Add GEMINI_API_KEY to .env.")
 
         try:
             from google import genai
             from google.genai import types
         except Exception as exc:  # pragma: no cover - depends on local env
-            self.last_error = f"google-genai unavailable: {exc}"
-            return None
+            self.last_error = str(exc)
+            raise AgentExecutionError(feature, "Gemini SDK is not installed or cannot be imported.") from exc
 
         try:
             client = genai.Client(api_key=self.api_key)
             config_kwargs: Dict[str, Any] = {"temperature": self.temperature}
             if json_mode:
                 config_kwargs["response_mime_type"] = "application/json"
-            try:
-                config = types.GenerateContentConfig(**config_kwargs)
-            except Exception:
-                config = config_kwargs
+            config = types.GenerateContentConfig(**config_kwargs)
             response = client.models.generate_content(
                 model=self.model,
                 contents=prompt,
@@ -302,9 +295,12 @@ class GeminiGateway:
             )
         except Exception as exc:  # pragma: no cover - requires live Gemini
             self.last_error = str(exc)
-            return None
+            raise AgentExecutionError(feature, f"{feature} could not reach Gemini.") from exc
 
-        return response_text(response)
+        text = response_text(response)
+        if not text.strip():
+            raise AgentExecutionError(feature, f"{feature} returned an empty response.")
+        return text.strip()
 
 
 class CaseMatcher:
@@ -333,47 +329,18 @@ class CaseMatcher:
 
         return None
 
-    def match(self, message: str) -> Tuple[Optional[Dict[str, Any]], float, List[str]]:
+    def match_terms(self, message: str) -> List[str]:
         message_lower = message.lower()
         message_tokens = set(tokenize(message))
-        best_case: Optional[Dict[str, Any]] = None
-        best_score = 0.0
-        best_terms: List[str] = []
-
+        matched: List[str] = []
         for case in self.cases:
             case_type = case["Case Type"]
-            aliases = CASE_ALIASES.get(case_type, [])
-            corpus = " ".join(
-                [
-                    case_type,
-                    case.get("Description", ""),
-                    " ".join(case.get("Relevant Questions", [])),
-                    " ".join(aliases),
-                ]
-            )
-            corpus_tokens = set(tokenize(corpus))
-            overlapping = sorted(message_tokens.intersection(corpus_tokens))
-            score = float(len(overlapping) * 2)
-
-            if case_type.lower() in message_lower:
-                score += 6
-                overlapping.append(case_type)
-
-            for alias in aliases:
+            corpus_tokens = set(tokenize(case_type + " " + " ".join(CASE_ALIASES.get(case_type, []))))
+            matched.extend(sorted(message_tokens.intersection(corpus_tokens)))
+            for alias in CASE_ALIASES.get(case_type, []):
                 if alias in message_lower:
-                    score += 4 if " " in alias else 2
-                    overlapping.append(alias)
-
-            if score > best_score:
-                best_case = case
-                best_score = score
-                best_terms = sorted(set(overlapping))
-
-        if not best_case or best_score < 2:
-            return None, 0.0, []
-
-        confidence = min(0.94, 0.35 + best_score / 18)
-        return best_case, round(confidence, 2), best_terms[:8]
+                    matched.append(alias)
+        return sorted(set(matched))[:10]
 
 
 class IntakeAgent:
@@ -383,99 +350,61 @@ class IntakeAgent:
         self.cases = cases
 
     def run(self, message: str) -> Tuple[Dict[str, Any], AgentStep]:
-        local_case, local_confidence, matched_terms = self.matcher.match(message)
         case_names = [case["Case Type"] for case in self.cases]
-        model_payload = self.gateway.generate_json(
+        matched_terms = self.matcher.match_terms(message)
+        payload = self.gateway.generate_json(
+            "IntakeAgent",
             "\n".join(
                 [
-                    "You are IntakeAgent for LawyerUp, a legal intake routing demo.",
-                    "Classify the user's message without giving legal advice.",
+                    "You are IntakeAgent for LawyerUP, a legal intake routing product.",
+                    "Classify the user's matter without giving legal advice.",
                     "Return JSON with keys: case_type, confidence, urgency, summary, facts, missing_info.",
+                    "confidence must be a number between 0 and 1.",
+                    "urgency must be one of routine, medium, high.",
                     f"Allowed case_type values: {', '.join(case_names)}. Use Unknown if none fit.",
+                    f"Local lexical hints: {', '.join(matched_terms) if matched_terms else 'none'}",
                     f"User message: {message}",
                 ]
-            )
+            ),
         )
 
-        used_model = bool(model_payload)
-        model_case_type = self.matcher.canonical_case_type(str(model_payload.get("case_type", ""))) if model_payload else None
-        case = self._find_case(model_case_type) or local_case
+        case_type = self.matcher.canonical_case_type(str(payload.get("case_type", ""))) or "Unknown"
+        confidence = payload.get("confidence", 0)
+        if not isinstance(confidence, (int, float)):
+            raise AgentExecutionError("IntakeAgent", "IntakeAgent returned an invalid confidence value.")
 
-        confidence = local_confidence
-        if model_payload and isinstance(model_payload.get("confidence"), (int, float)):
-            confidence = max(confidence, min(float(model_payload["confidence"]), 0.98))
-
-        urgency = self._urgency(message)
-        if model_payload and str(model_payload.get("urgency", "")).lower() in {"routine", "medium", "high"}:
-            urgency = str(model_payload["urgency"]).lower()
+        urgency = str(payload.get("urgency", "routine")).lower()
+        if urgency not in {"routine", "medium", "high"}:
+            raise AgentExecutionError("IntakeAgent", "IntakeAgent returned an invalid urgency value.")
 
         assessment = {
-            "case_type": case["Case Type"] if case else "Unknown",
-            "case_id": case.get("Case ID") if case else None,
-            "confidence": round(confidence, 2) if case else 0.18,
+            "case_type": case_type,
+            "case_id": self._case_id(case_type),
+            "confidence": round(max(0.0, min(float(confidence), 0.99)), 2),
             "urgency": urgency,
-            "summary": compact_text(
-                str(model_payload.get("summary", "")) if model_payload and model_payload.get("summary") else message
-            ),
-            "facts": as_list(model_payload.get("facts"))[:4] if model_payload else [compact_text(message, 140)],
+            "summary": compact_text(str(payload.get("summary", "")), 420),
+            "facts": as_list(payload.get("facts"))[:5],
             "matched_terms": matched_terms,
-            "missing_info": self._missing_info(case, message, model_payload),
+            "missing_info": as_list(payload.get("missing_info"))[:4],
         }
+
+        if not assessment["summary"] or not assessment["facts"]:
+            raise AgentExecutionError("IntakeAgent", "IntakeAgent returned an incomplete intake brief.")
 
         step = AgentStep(
             name="IntakeAgent",
             role="Classifies matter type and extracts the clean intake brief.",
-            status="model-assisted" if used_model else "local-classifier",
+            status="gemini-required",
             summary=f"Routed to {assessment['case_type']} with {int(assessment['confidence'] * 100)}% confidence.",
-            used_model=used_model,
-            details={
-                "model": self.gateway.model if used_model else None,
-                "matched_terms": matched_terms,
-            },
+            details={"model": self.gateway.model, "matched_terms": matched_terms},
         )
         return assessment, step
 
-    def _find_case(self, case_type: Optional[str]) -> Optional[Dict[str, Any]]:
-        if not case_type:
-            return None
+    def _case_id(self, case_type: str) -> Optional[int]:
         for case in self.cases:
             if case["Case Type"] == case_type:
-                return case
+                return case.get("Case ID")
         return None
-
-    def _missing_info(
-        self,
-        case: Optional[Dict[str, Any]],
-        message: str,
-        model_payload: Optional[Dict[str, Any]],
-    ) -> List[str]:
-        questions = as_list(model_payload.get("missing_info"))[:3] if model_payload else []
-        if len(questions) >= 3:
-            return questions
-
-        message_lower = message.lower()
-        for question in (case or {}).get("Relevant Questions", []):
-            question_tokens = set(tokenize(question))
-            if not question_tokens.intersection(tokenize(message_lower)):
-                questions.append(question)
-            if len(questions) == 3:
-                break
-
-        if not questions:
-            questions = [
-                "What happened, and when did it happen?",
-                "Who else is involved?",
-                "Do you have documents, photos, messages, or notices connected to it?",
-            ]
-        return questions[:3]
-
-    def _urgency(self, message: str) -> str:
-        message_lower = message.lower()
-        if any(keyword in message_lower for keyword in URGENCY_KEYWORDS["high"]):
-            return "high"
-        if any(keyword in message_lower for keyword in URGENCY_KEYWORDS["medium"]):
-            return "medium"
-        return "routine"
 
 
 class TriageAgent:
@@ -483,70 +412,216 @@ class TriageAgent:
         self.gateway = gateway
 
     def run(self, message: str, assessment: Dict[str, Any]) -> Tuple[Dict[str, Any], AgentStep]:
-        prompt = "\n".join(
-            [
-                "You are TriageAgent for a legal intake routing demo.",
-                "Return JSON with keys: next_questions, risk_flags, intake_priority.",
-                "Write short, practical intake questions. Do not provide legal advice.",
-                f"Assessment: {json.dumps(assessment, ensure_ascii=False)}",
-                f"Original message: {message}",
-            ]
+        payload = self.gateway.generate_json(
+            "TriageAgent",
+            "\n".join(
+                [
+                    "You are TriageAgent for LawyerUP.",
+                    "Return JSON with keys: next_questions, risk_flags, intake_priority.",
+                    "intake_priority must be one of standard, priority, same-day.",
+                    "Write practical intake questions. Do not provide legal advice.",
+                    "Do not cite statutes, day counts, year counts, jurisdiction-specific deadlines, or exact filing windows.",
+                    "Phrase risk_flags as possible intake concerns that require attorney review, not legal conclusions.",
+                    f"Assessment: {json.dumps(assessment, ensure_ascii=False)}",
+                    f"Original message: {message}",
+                ]
+            ),
         )
-        model_payload = self.gateway.generate_json(prompt)
-        used_model = bool(model_payload)
 
-        next_questions = as_list(model_payload.get("next_questions"))[:3] if model_payload else []
-        if len(next_questions) < 3:
-            next_questions.extend(assessment.get("missing_info", []))
-
-        risk_flags = as_list(model_payload.get("risk_flags"))[:3] if model_payload else []
-        if not risk_flags:
-            risk_flags = self._default_flags(message, assessment)
-
-        priority = str(model_payload.get("intake_priority", "")) if model_payload else ""
-        if priority.lower() not in {"standard", "priority", "same-day"}:
-            priority = "same-day" if assessment.get("urgency") == "high" else "priority" if assessment.get("urgency") == "medium" else "standard"
+        priority = str(payload.get("intake_priority", "")).lower()
+        if priority not in {"standard", "priority", "same-day"}:
+            raise AgentExecutionError("TriageAgent", "TriageAgent returned an invalid priority.")
 
         triage = {
-            "next_questions": self._dedupe(next_questions)[:3],
-            "risk_flags": self._dedupe(risk_flags)[:3],
+            "next_questions": self._dedupe(as_list(payload.get("next_questions")))[:4],
+            "risk_flags": self._safe_risk_flags(as_list(payload.get("risk_flags")))[:4],
             "intake_priority": priority,
         }
+        if not triage["next_questions"]:
+            raise AgentExecutionError("TriageAgent", "TriageAgent did not return next questions.")
 
         step = AgentStep(
             name="TriageAgent",
             role="Identifies missing intake facts and time-sensitive signals.",
-            status="model-assisted" if used_model else "rule-based",
-            summary=f"Marked as {triage['intake_priority']} intake with {len(triage['next_questions'])} follow-up questions.",
-            used_model=used_model,
+            status="parallel-gemini",
+            summary=f"Marked as {priority} intake with {len(triage['next_questions'])} follow-up questions.",
             details={"risk_flags": triage["risk_flags"]},
         )
         return triage, step
-
-    def _default_flags(self, message: str, assessment: Dict[str, Any]) -> List[str]:
-        case_type = assessment.get("case_type")
-        urgency = assessment.get("urgency")
-        flags: List[str] = []
-        if urgency == "high":
-            flags.append("There may be an active deadline, court date, or immediate safety concern.")
-        if case_type in {"Personal Injury", "Medical Malpractice"}:
-            flags.append("Medical records, incident photos, and insurance contact details will matter.")
-        if case_type in {"DUI (Driving Under the Influence)", "Criminal Defense"}:
-            flags.append("Charging documents and hearing dates should be reviewed quickly.")
-        if not flags:
-            flags.append("The intake team should confirm dates, parties, documents, and preferred contact window.")
-        return flags
 
     def _dedupe(self, values: Iterable[str]) -> List[str]:
         seen = set()
         output = []
         for value in values:
-            cleaned = compact_text(value, 160)
+            cleaned = compact_text(value, 180)
             key = cleaned.lower()
             if cleaned and key not in seen:
                 seen.add(key)
                 output.append(cleaned)
         return output
+
+    def _safe_risk_flags(self, values: Iterable[str]) -> List[str]:
+        guarded = []
+        risky_pattern = re.compile(
+            r"\b(\d+\s*(day|days|year|years)|statute|pip|florida|deadline|filing window|"
+            r"compromise the claim|compromising the claim|legal action)\b",
+            re.IGNORECASE,
+        )
+        for value in self._dedupe(values):
+            lower_value = value.lower()
+            if risky_pattern.search(value):
+                if "statement" in lower_value or "adjuster" in lower_value or "insurance" in lower_value:
+                    value = "Insurance contact history needs attorney review before any statement-related recommendation."
+                elif "medical" in lower_value or "pain" in lower_value or "treatment" in lower_value:
+                    value = "Medical treatment history is missing and should be documented for attorney review."
+                else:
+                    value = "Possible timing issue that needs attorney review before any deadline conclusion."
+            elif "attorney review" not in lower_value:
+                value = f"{value} Attorney review is needed before any conclusion."
+            if value and value not in guarded:
+                guarded.append(value)
+        return guarded
+
+
+class DeadlineSignalAgent:
+    def __init__(self, gateway: GeminiGateway) -> None:
+        self.gateway = gateway
+
+    def run(self, message: str, assessment: Dict[str, Any]) -> Tuple[Dict[str, Any], AgentStep]:
+        payload = self.gateway.generate_json(
+            "DeadlineSignalAgent",
+            "\n".join(
+                [
+                    "You are DeadlineSignalAgent for LawyerUP.",
+                    "Return JSON with keys: deadline_signals, time_sensitive_actions.",
+                    "Flag possible timing concerns in plain language for the intake team.",
+                    "Do not give legal advice or tell the user what to do.",
+                    "Do not tell the user to decline, avoid, hire, consult, contact counsel, or provide/refuse a statement.",
+                    "Frame time_sensitive_actions as neutral intake data collection and attorney-review routing tasks.",
+                    "Do not cite statutes, day counts, year counts, filing windows, jurisdiction-specific rules, or exact legal deadlines.",
+                    "Every item must say that attorney review is needed before any deadline conclusion.",
+                    f"Assessment: {json.dumps(assessment, ensure_ascii=False)}",
+                    f"Original message: {message}",
+                ]
+            ),
+        )
+        data = {
+            "deadline_signals": self._safe_deadline_items(as_list(payload.get("deadline_signals")))[:4],
+            "time_sensitive_actions": self._safe_action_items(as_list(payload.get("time_sensitive_actions")))[:4],
+        }
+        step = AgentStep(
+            name="DeadlineSignalAgent",
+            role="Reviews the matter for time-sensitive intake signals.",
+            status="spawned-gemini",
+            summary=f"Found {len(data['deadline_signals'])} possible deadline signals.",
+            details=data,
+        )
+        return data, step
+
+    def _safe_deadline_items(self, values: Sequence[str]) -> List[str]:
+        guarded = []
+        risky_pattern = re.compile(
+            r"\b(\d+\s*(day|days|year|years)|statute|requires|required|must|deadline is|filing window|"
+            r"without representation|compromising the claim|critical period|immediate risk)\b",
+            re.IGNORECASE,
+        )
+        for value in values:
+            cleaned = compact_text(value, 220)
+            if risky_pattern.search(cleaned):
+                cleaned = "Possible timing issue that needs attorney review before any deadline or strategy conclusion."
+            elif "attorney review" not in cleaned.lower():
+                cleaned = f"{cleaned} Attorney review is needed before any deadline conclusion."
+            if cleaned and cleaned not in guarded:
+                guarded.append(cleaned)
+        return guarded
+
+    def _safe_action_items(self, values: Sequence[str]) -> List[str]:
+        guarded = []
+        advice_pattern = re.compile(
+            r"\b(decline|do not|don't|avoid|refuse|consult|hire|contact counsel|secure legal counsel|"
+            r"without legal counsel|without representation|provide any recorded|recorded statement|"
+            r"written statement|as soon as possible|must|should not)\b",
+            re.IGNORECASE,
+        )
+        for value in values:
+            cleaned = compact_text(value, 220)
+            cleaned = re.sub(r"\bimmediately\b", "promptly", cleaned, flags=re.IGNORECASE)
+            if advice_pattern.search(cleaned):
+                lower_value = cleaned.lower()
+                if "statement" in lower_value or "adjuster" in lower_value or "insurance" in lower_value:
+                    cleaned = (
+                        "Record the insurance contact history and whether any statement has been requested "
+                        "or provided before attorney review."
+                    )
+                elif "medical" in lower_value or "treatment" in lower_value or "pain" in lower_value:
+                    cleaned = "Collect medical evaluation dates, provider names, symptoms, and records for attorney review."
+                else:
+                    cleaned = "Route the timing concern for attorney review before recommending any action."
+            if cleaned and cleaned not in guarded:
+                guarded.append(cleaned)
+        return guarded
+
+
+class EvidenceChecklistAgent:
+    def __init__(self, gateway: GeminiGateway) -> None:
+        self.gateway = gateway
+
+    def run(self, message: str, assessment: Dict[str, Any]) -> Tuple[Dict[str, Any], AgentStep]:
+        payload = self.gateway.generate_json(
+            "EvidenceChecklistAgent",
+            "\n".join(
+                [
+                    "You are EvidenceChecklistAgent for LawyerUP.",
+                    "Return JSON with keys: evidence_checklist, document_requests.",
+                    "List useful documents or facts the intake team should request. Do not give legal advice.",
+                    f"Assessment: {json.dumps(assessment, ensure_ascii=False)}",
+                    f"Original message: {message}",
+                ]
+            ),
+        )
+        data = {
+            "evidence_checklist": as_list(payload.get("evidence_checklist"))[:5],
+            "document_requests": as_list(payload.get("document_requests"))[:5],
+        }
+        step = AgentStep(
+            name="EvidenceChecklistAgent",
+            role="Builds the evidence and document request checklist.",
+            status="spawned-gemini",
+            summary=f"Prepared {len(data['document_requests'])} document requests.",
+            details=data,
+        )
+        return data, step
+
+
+class SubagentCoordinator:
+    def __init__(self, gateway: GeminiGateway) -> None:
+        self.deadline_agent = DeadlineSignalAgent(gateway)
+        self.evidence_agent = EvidenceChecklistAgent(gateway)
+
+    def run(self, message: str, assessment: Dict[str, Any]) -> Tuple[Dict[str, Any], AgentStep]:
+        agents = {
+            "deadlines": lambda: self.deadline_agent.run(message, assessment),
+            "evidence": lambda: self.evidence_agent.run(message, assessment),
+        }
+        results: Dict[str, Any] = {}
+        children: List[AgentStep] = []
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            futures = {executor.submit(agent): key for key, agent in agents.items()}
+            for future in as_completed(futures):
+                key = futures[future]
+                data, step = future.result()
+                results[key] = data
+                children.append(step)
+
+        step = AgentStep(
+            name="SubagentCoordinator",
+            role="Spawns focused deadline and evidence subagents when a matter is reviewed.",
+            status="spawned-parallel",
+            summary=f"Completed {len(children)} spawned subagents.",
+            details={"spawned": [child.name for child in children]},
+            children=sorted(children, key=lambda item: item.name),
+        )
+        return results, step
 
 
 class AttorneyMatchAgent:
@@ -559,31 +634,20 @@ class AttorneyMatchAgent:
         case = self.cases_by_type.get(case_type)
         recommended_sequence = case.get("Recommended Lawyer ID", []) if case else []
         recommended_ids = set(recommended_sequence)
-        recommended_rank = {
-            lawyer_id: index for index, lawyer_id in enumerate(recommended_sequence)
-        }
+        recommended_rank = {lawyer_id: index for index, lawyer_id in enumerate(recommended_sequence)}
 
         matches: List[Dict[str, Any]] = []
         for lawyer in self.lawyers:
-            score, reasons = self._score_lawyer(
-                lawyer,
-                case_type,
-                recommended_ids,
-                recommended_rank,
-            )
-            if score < 32 and recommended_ids:
-                continue
-            if score < 26 and not recommended_ids:
-                continue
-            matches.append(self._format_match(lawyer, score, reasons))
+            score, reasons = self._score_lawyer(lawyer, case_type, recommended_ids, recommended_rank)
+            if score >= 26:
+                matches.append(self._format_match(lawyer, score, reasons))
 
         matches.sort(key=lambda item: item["match_score"], reverse=True)
         selected = matches[:3]
-
         step = AgentStep(
             name="AttorneyMatchAgent",
             role="Ranks sample attorneys by practice fit, data-backed recommendation, and experience.",
-            status="deterministic-grounding",
+            status="parallel-deterministic",
             summary=f"Selected {len(selected)} attorney matches from {len(self.lawyers)} sample profiles.",
             used_model=False,
             details={"recommended_ids": sorted(recommended_ids)},
@@ -620,10 +684,8 @@ class AttorneyMatchAgent:
         score += min(experience, 22)
         if experience >= 12:
             reasons.append(f"{experience} years of experience")
-
         if not reasons:
             reasons.append("general intake coverage")
-
         return min(score, 98), reasons[:3]
 
     def _format_match(self, lawyer: Dict[str, Any], score: int, reasons: Sequence[str]) -> Dict[str, Any]:
@@ -653,66 +715,36 @@ class ResponseAgent:
         message: str,
         assessment: Dict[str, Any],
         triage: Dict[str, Any],
+        subagent_results: Dict[str, Any],
         matches: Sequence[Dict[str, Any]],
     ) -> Tuple[str, AgentStep]:
-        prompt = "\n".join(
-            [
-                "You are ResponseAgent for LawyerUp, a legal intake routing demo.",
-                "Write a warm, concise response that summarizes the matter, asks the next questions, and names attorney matches.",
-                "Do not provide legal advice, promises, or definitive conclusions.",
-                "Use plain text only. Do not use Markdown, bold, italics, headings, or bullets.",
-                "Refer to matches as sample attorney matches, not guaranteed representation.",
-                "Keep the response under 180 words.",
-                f"User message: {message}",
-                f"Assessment: {json.dumps(assessment, ensure_ascii=False)}",
-                f"Triage: {json.dumps(triage, ensure_ascii=False)}",
-                f"Attorney matches: {json.dumps(list(matches), ensure_ascii=False)}",
-            ]
+        text = self.gateway.generate_text(
+            "ResponseAgent",
+            "\n".join(
+                [
+                    "You are ResponseAgent for LawyerUP, a legal intake routing product.",
+                    "Write a concise response that summarizes the matter, asks the next questions, and names sample attorney matches.",
+                    "Do not provide legal advice, promises, or definitive conclusions.",
+                    "Do not say anyone will contact the user. Avoid assurances about representation or outcomes.",
+                    "Use plain text only. Do not use Markdown, headings, bullets, bold, or italics.",
+                    "Refer to attorney results as sample matches, not guaranteed representation.",
+                    "Keep the response under 170 words.",
+                    f"User message: {message}",
+                    f"Assessment: {json.dumps(assessment, ensure_ascii=False)}",
+                    f"Triage: {json.dumps(triage, ensure_ascii=False)}",
+                    f"Subagent results: {json.dumps(subagent_results, ensure_ascii=False)}",
+                    f"Attorney matches: {json.dumps(list(matches), ensure_ascii=False)}",
+                ]
+            ),
         )
-        model_text = self.gateway.generate_text(prompt)
-        used_model = bool(model_text)
-        reply = compact_text(model_text, 1100) if model_text else self._fallback_reply(assessment, triage, matches)
-
         step = AgentStep(
             name="ResponseAgent",
             role="Composes the user-facing intake response from grounded agent outputs.",
-            status="model-assisted" if used_model else "template-fallback",
+            status="gemini-required",
             summary="Generated the final intake response.",
-            used_model=used_model,
-            details={"model": self.gateway.model if used_model else None},
+            details={"model": self.gateway.model},
         )
-        return reply, step
-
-    def _fallback_reply(
-        self,
-        assessment: Dict[str, Any],
-        triage: Dict[str, Any],
-        matches: Sequence[Dict[str, Any]],
-    ) -> str:
-        case_type = assessment.get("case_type", "Unknown")
-        summary = assessment.get("summary") or "your situation"
-
-        lines = [
-            f"I read this as a {case_type.lower()} intake based on: {summary}",
-            "",
-            "The next useful details are:",
-        ]
-        lines.extend(f"{index}. {question}" for index, question in enumerate(triage.get("next_questions", []), start=1))
-
-        if matches:
-            lines.append("")
-            lines.append("Good starting matches:")
-            for lawyer in matches:
-                lines.append(
-                    f"- {lawyer['name']}, {lawyer['role']} ({lawyer['match_score']}% fit): {lawyer['reason']}."
-                )
-        else:
-            lines.append("")
-            lines.append("I do not have enough detail yet to route this to a specific attorney.")
-
-        lines.append("")
-        lines.append("This is intake routing only, not legal advice.")
-        return "\n".join(lines)
+        return compact_text(text, 1100), step
 
 
 class LegalAgentSystem:
@@ -724,16 +756,25 @@ class LegalAgentSystem:
         self.intake_agent = IntakeAgent(self.gateway, self.matcher, self.cases)
         self.triage_agent = TriageAgent(self.gateway)
         self.match_agent = AttorneyMatchAgent(self.lawyers, self.cases)
+        self.subagent_coordinator = SubagentCoordinator(self.gateway)
         self.response_agent = ResponseAgent(self.gateway)
 
     def health(self) -> Dict[str, Any]:
+        if not self.gateway.configured:
+            status = "missing_configuration"
+        elif self.gateway.last_error:
+            status = "provider_error"
+        else:
+            status = "ready"
+
         return {
-            "status": "ok",
+            "status": status,
             "model": self.gateway.model,
             "gemini_configured": self.gateway.configured,
             "last_model_error": self.gateway.last_error,
             "lawyer_count": len(self.lawyers),
             "case_count": len(self.cases),
+            "fallbacks_enabled": False,
         }
 
     def case_options(self) -> List[Dict[str, Any]]:
@@ -747,28 +788,46 @@ class LegalAgentSystem:
         ]
 
     def run(self, message: str) -> Dict[str, Any]:
-        clean_message = compact_text(message, 1200)
+        clean_message = compact_text(message, 3000)
         steps: List[AgentStep] = []
 
-        assessment, step = self.intake_agent.run(clean_message)
-        steps.append(step)
+        assessment, intake_step = self.intake_agent.run(clean_message)
+        steps.append(intake_step)
 
-        triage, step = self.triage_agent.run(clean_message, assessment)
-        steps.append(step)
+        parallel_tasks = {
+            "triage": lambda: self.triage_agent.run(clean_message, assessment),
+            "matches": lambda: self.match_agent.run(assessment),
+            "subagents": lambda: self.subagent_coordinator.run(clean_message, assessment),
+        }
+        parallel_results: Dict[str, Any] = {}
+        with ThreadPoolExecutor(max_workers=3) as executor:
+            futures = {executor.submit(task): name for name, task in parallel_tasks.items()}
+            for future in as_completed(futures):
+                name = futures[future]
+                data, step = future.result()
+                parallel_results[name] = data
+                steps.append(step)
 
-        matches, step = self.match_agent.run(assessment)
-        steps.append(step)
-
-        reply, step = self.response_agent.run(clean_message, assessment, triage, matches)
-        steps.append(step)
+        triage = parallel_results["triage"]
+        matches = parallel_results["matches"]
+        subagent_results = parallel_results["subagents"]
+        reply, response_step = self.response_agent.run(
+            clean_message,
+            assessment,
+            triage,
+            subagent_results,
+            matches,
+        )
+        steps.append(response_step)
 
         return {
             "reply": reply,
             "case_assessment": assessment,
             "triage": triage,
             "recommended_lawyers": matches,
+            "subagent_results": subagent_results,
             "agent_trace": [item.to_dict() for item in steps],
             "model": self.gateway.model,
-            "mode": "gemini-assisted" if any(item.used_model for item in steps) else "local-fallback",
-            "disclaimer": "LawyerUp is an intake routing prototype and does not provide legal advice.",
+            "mode": "gemini-required",
+            "disclaimer": "LawyerUP is an intake routing product and does not provide legal advice.",
         }

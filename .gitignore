@@ -2,5 +2,7 @@
 .venv/
 .pycache/
 __pycache__/
+instance/
 *.pyc
 .DS_Store
+.gemini/

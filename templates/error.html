@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}{{ status_code }} | LawyerUP{% endblock %}
+{% block body_class %}auth-page{% endblock %}
+
+{% block content %}
+  <main id="main" class="auth-shell">
+    <section class="auth-copy">
+      <a class="brand-mark" href="{{ url_for('landing') }}">
+        <span>LU</span>
+        <strong>LawyerUP</strong>
+      </a>
+      <h1>{{ status_code }}</h1>
+      <p>{{ message }}</p>
+      <a class="primary-button" href="{{ url_for('landing') }}">Go home</a>
+    </section>
+  </main>
+{% endblock %}

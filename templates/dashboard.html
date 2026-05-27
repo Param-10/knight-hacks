@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | LawyerUP{% endblock %}
+{% block body_class %}dashboard-page{% endblock %}
+
+{% block content %}
+  <div class="dashboard-shell">
+    <aside class="sidebar" aria-label="Workspace navigation">
+      <a class="brand-mark" href="{{ url_for('dashboard') }}">
+        <span>LU</span>
+        <strong>LawyerUP</strong>
+      </a>
+      <nav class="side-nav">
+        <button class="side-nav-item active" data-view-trigger="intake">Intake</button>
+        <button class="side-nav-item" data-view-trigger="matters">Matters</button>
+        <button class="side-nav-item" data-view-trigger="agents">Agents</button>
+        <button class="side-nav-item" data-view-trigger="settings">Settings</button>
+      </nav>
+      <form method="post" action="{{ url_for('logout') }}" class="logout-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+        <button class="secondary-button full-width" type="submit">Logout</button>
+      </form>
+    </aside>
+
+    <main id="main" class="dashboard-main">
+      <header class="dashboard-topbar">
+        <div>
+          <p class="micro-label">{{ current_user.organization or "Legal intake workspace" }}</p>
+          <h1>Good to see you, {{ current_user.name.split(" ")[0] }}.</h1>
+        </div>
+        <div class="topbar-meta">
+          <span id="model-chip" class="status-chip">{{ health.model }}</span>
+          <span id="runtime-chip" class="status-chip {{ 'error-chip' if health.last_model_error or not health.gemini_configured else '' }}">
+            {{ "Gemini error" if health.last_model_error else ("Gemini connected" if health.gemini_configured else "Gemini unavailable") }}
+          </span>
+        </div>
+      </header>
+
+      <section class="dashboard-view active" data-view="intake">
+        <div class="workspace-grid">
+          <section class="panel intake-workspace" aria-labelledby="intake-title">
+            <div class="panel-header">
+              <div>
+                <p class="micro-label">Matter review</p>
+                <h2 id="intake-title">Run intake</h2>
+              </div>
+              <div class="agent-rail" aria-label="Agent pipeline">
+                <span data-agent-step="IntakeAgent">Intake</span>
+                <span data-agent-step="TriageAgent">Triage</span>
+                <span data-agent-step="AttorneyMatchAgent">Match</span>
+                <span data-agent-step="SubagentCoordinator">Subagents</span>
+                <span data-agent-step="ResponseAgent">Response</span>
+              </div>
+            </div>
+
+            <div class="sample-row" aria-label="Sample matters">
+              <button type="button" class="sample-button">
+                I was rear-ended near Orlando last week and the insurance company keeps calling.
+              </button>
+              <button type="button" class="sample-button">
+                I got a DUI citation after a traffic stop, and my first court date is next week.
+              </button>
+              <button type="button" class="sample-button">
+                My employer fired me after I reported harassment and I still have the emails.
+              </button>
+            </div>
+
+            <form id="matter-form" class="composer">
+              <label for="matter-input">Matter notes</label>
+              <textarea
+                id="matter-input"
+                name="message"
+                rows="8"
+                maxlength="3000"
+                placeholder="Paste or type the client story. Include dates, documents, notices, injuries, charges, insurance contact, or court deadlines."
+                required
+              ></textarea>
+              <div class="composer-actions">
+                <p id="form-status" class="form-status" role="status"></p>
+                <button type="button" id="clear-btn" class="secondary-button">Clear</button>
+                <button type="submit" id="send-btn" class="primary-button">Run agents</button>
+              </div>
+            </form>
+          </section>
+
+          <aside class="result-stack" aria-label="Matter output">
+            <section class="panel brief-panel">
+              <div class="panel-header compact">
+                <div>
+                  <p class="micro-label">Brief</p>
+                  <h2>Matter snapshot</h2>
+                </div>
+                <span id="priority-badge" class="priority-badge">New</span>
+              </div>
+              <dl class="brief-grid">
+                <div>
+                  <dt>Case type</dt>
+                  <dd id="case-type">Awaiting intake</dd>
+                </div>
+                <div>
+                  <dt>Confidence</dt>
+                  <dd id="confidence">--</dd>
+                </div>
+                <div>
+                  <dt>Urgency</dt>
+                  <dd id="urgency">--</dd>
+                </div>
+              </dl>
+              <p id="case-summary" class="muted-copy">Run intake to create the brief.</p>
+            </section>
+
+            <section class="panel response-panel">
+              <div class="panel-header compact">
+                <div>
+                  <p class="micro-label">Response</p>
+                  <h2>Client-ready note</h2>
+                </div>
+              </div>
+              <p id="response-text" class="muted-copy">No response yet.</p>
+            </section>
+          </aside>
+        </div>
+      </section>
+
+      <section class="dashboard-view" data-view="matters">
+        <div class="section-heading compact-heading">
+          <p class="micro-label">History</p>
+          <h2>Recent matters</h2>
+        </div>
+        <div id="review-list" class="review-list">
+          {% for review in reviews %}
+            <article class="review-card">
+              <span>{{ review.priority }}</span>
+              <h3>{{ review.case_type }}</h3>
+              <p>{{ review.summary or review.message }}</p>
+              <small>{{ review.created_at }}</small>
+            </article>
+          {% else %}
+            <div class="empty-state">
+              <h3>No matters yet</h3>
+              <p>Run your first intake review and it will appear here.</p>
+            </div>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="dashboard-view" data-view="agents">
+        <div class="section-heading compact-heading">
+          <p class="micro-label">Orchestration</p>
+          <h2>Agent system</h2>
+        </div>
+        <div class="agent-grid">
+          <article>
+            <span>Required</span>
+            <h3>Gemini gateway</h3>
+            <p>Model failures are returned as clear feature-level errors.</p>
+          </article>
+          <article>
+            <span>Step 1</span>
+            <h3>IntakeAgent</h3>
+            <p>Creates the canonical brief and unlocks the parallel phase.</p>
+          </article>
+          <article>
+            <span>Parallel</span>
+            <h3>Triage + Match + Subagents</h3>
+            <p>Independent work runs concurrently after matter classification.</p>
+          </article>
+          <article>
+            <span>Spawned</span>
+            <h3>Deadline + Evidence</h3>
+            <p>Focused subagents produce time-sensitive and document checklists.</p>
+          </article>
+        </div>
+        <ol id="trace-list" class="trace-list spacious">
+          <li>Run an intake to inspect the trace.</li>
+        </ol>
+      </section>
+
+      <section class="dashboard-view" data-view="settings">
+        <div class="section-heading compact-heading">
+          <p class="micro-label">Settings</p>
+          <h2>Workspace controls</h2>
+        </div>
+        <div class="settings-grid">
+          <section class="panel settings-panel">
+            <h3>Account</h3>
+            <dl class="settings-list">
+              <div>
+                <dt>Name</dt>
+                <dd>{{ current_user.name }}</dd>
+              </div>
+              <div>
+                <dt>Email</dt>
+                <dd>{{ current_user.email }}</dd>
+              </div>
+              <div>
+                <dt>Organization</dt>
+                <dd>{{ current_user.organization or "Not set" }}</dd>
+              </div>
+            </dl>
+          </section>
+          <section class="panel settings-panel">
+            <h3>Workspace flow</h3>
+            <ul class="line-list">
+              <li>Saved matters stay attached to your account history.</li>
+              <li>Agent traces remain available after every completed review.</li>
+              <li>Client-ready notes are stored with the source intake brief.</li>
+              <li>Sample matches are grounded in the local attorney records.</li>
+            </ul>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+{% endblock %}
