@@ -1,126 +1,265 @@
-const chatbotToggler = document.querySelector(".chatbot-toggler");
-const closeBtn = document.querySelector(".close-btn");
-const chatbox = document.querySelector(".chatbox");
-const chatInput = document.querySelector(".chat-input textarea");
-const sendChatBtn = document.querySelector(".chat-input span");
+const form = document.querySelector("#matter-form");
+const input = document.querySelector("#matter-input");
+const clearButton = document.querySelector("#clear-btn");
+const sendButton = document.querySelector("#send-btn");
+const chatThread = document.querySelector("#chat-thread");
+const modelChip = document.querySelector("#model-chip");
+const runtimeChip = document.querySelector("#runtime-chip");
+const agentPills = document.querySelectorAll("[data-agent-step]");
 
-let userMessage = null; // Variable to store user's message
-const inputInitHeight = chatInput.scrollHeight;
+const fields = {
+  priority: document.querySelector("#priority-badge"),
+  caseType: document.querySelector("#case-type"),
+  confidence: document.querySelector("#confidence"),
+  urgency: document.querySelector("#urgency"),
+  summary: document.querySelector("#case-summary"),
+  questions: document.querySelector("#question-list"),
+  attorneys: document.querySelector("#attorney-list"),
+  trace: document.querySelector("#trace-list"),
+};
 
-const createChatLi = (message, className) => {
-    // Create a chat <li> element with passed message and className
-    const chatLi = document.createElement("li");
-    chatLi.classList.add("chat", `${className}`);
-    let chatContent = className === "outgoing" ? `<p></p>` : `<span class="material-symbols-outlined">smart_toy</span><p></p>`;
-    chatLi.innerHTML = chatContent;
-    chatLi.querySelector("p").textContent = message;
-    return chatLi; // return chat <li> element
+const sampleMatters = [
+  "I was hit by a rideshare driver in Orlando and my neck has been hurting for three days.",
+  "I got a DUI citation after a traffic stop, and my first court date is next week.",
+  "My employer fired me after I reported harassment and I still have the emails.",
+];
+
+function escapeText(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
-const MAX_REQUESTS_PER_MINUTE = 58; // Adjust based on your subscription level
-let lastRequestTimestamp = 0;
+function createMessage(role, text, options = {}) {
+  const item = document.createElement("li");
+  item.className = `message ${role === "user" ? "user-message" : "assistant-message"}`;
 
-const generateResponse = (chatElement) => {
-    const messageElement = chatElement.querySelector("p");
+  if (options.loading) {
+    item.classList.add("loading-message");
+    item.innerHTML = `
+      <div class="skeleton-line wide"></div>
+      <div class="skeleton-line"></div>
+      <div class="skeleton-line short"></div>
+    `;
+  } else {
+    const paragraph = document.createElement("p");
+    paragraph.textContent = text;
+    item.appendChild(paragraph);
+  }
 
-    const now = Date.now();
-    const timeSinceLastRequest = now - lastRequestTimestamp;
+  chatThread.appendChild(item);
+  chatThread.scrollTo({ top: chatThread.scrollHeight, behavior: "smooth" });
+  return item;
+}
 
-    if (timeSinceLastRequest < 60000 / MAX_REQUESTS_PER_MINUTE) {
-        setTimeout(() => generateResponse(chatElement), 60000 / MAX_REQUESTS_PER_MINUTE - timeSinceLastRequest);
-        return;
+function setBusy(isBusy) {
+  sendButton.disabled = isBusy;
+  clearButton.disabled = isBusy;
+  input.disabled = isBusy;
+  sendButton.textContent = isBusy ? "Reviewing" : "Review matter";
+  agentPills.forEach((pill) => pill.classList.toggle("is-running", isBusy));
+}
+
+function setAgentTrace(trace = []) {
+  const completed = new Set(trace.map((step) => step.name));
+
+  agentPills.forEach((pill) => {
+    const name = pill.dataset.agentStep;
+    pill.classList.toggle("is-complete", completed.has(name));
+    pill.classList.remove("is-running");
+  });
+}
+
+function renderBrief(data) {
+  const assessment = data.case_assessment || {};
+  const triage = data.triage || {};
+  const confidence = Number(assessment.confidence || 0);
+
+  fields.priority.textContent = triage.intake_priority || "Standard";
+  fields.priority.dataset.priority = triage.intake_priority || "standard";
+  fields.caseType.textContent = assessment.case_type || "Unknown";
+  fields.confidence.textContent = confidence ? `${Math.round(confidence * 100)}%` : "--";
+  fields.urgency.textContent = assessment.urgency || "--";
+  fields.summary.textContent = assessment.summary || "No summary returned.";
+}
+
+function renderQuestions(data) {
+  const questions = data.triage?.next_questions || [];
+  const flags = data.triage?.risk_flags || [];
+
+  if (!questions.length && !flags.length) {
+    fields.questions.innerHTML = "<li>No open questions yet.</li>";
+    return;
+  }
+
+  const questionItems = questions
+    .map((question) => `<li>${escapeText(question)}</li>`)
+    .join("");
+  const flagItems = flags
+    .map((flag) => `<li class="risk-flag">${escapeText(flag)}</li>`)
+    .join("");
+
+  fields.questions.innerHTML = `${questionItems}${flagItems}`;
+}
+
+function renderAttorneys(data) {
+  const attorneys = data.recommended_lawyers || [];
+
+  if (!attorneys.length) {
+    fields.attorneys.innerHTML = '<p class="muted-copy">No attorney match yet.</p>';
+    return;
+  }
+
+  fields.attorneys.innerHTML = attorneys
+    .map((attorney) => {
+      const expertise = (attorney.expertise || [])
+        .map((item) => `<span>${escapeText(item)}</span>`)
+        .join("");
+      const languages = (attorney.languages || []).join(", ");
+
+      return `
+        <article class="attorney-card">
+          <div class="attorney-card-top">
+            <div>
+              <h3>${escapeText(attorney.name)}</h3>
+              <p>${escapeText(attorney.role)} · ${escapeText(attorney.location)}</p>
+            </div>
+            <strong>${escapeText(attorney.match_score)}%</strong>
+          </div>
+          <p>${escapeText(attorney.reason)}</p>
+          <div class="tag-row">${expertise}</div>
+          <dl>
+            <div>
+              <dt>Experience</dt>
+              <dd>${escapeText(attorney.experience)} years</dd>
+            </div>
+            <div>
+              <dt>Languages</dt>
+              <dd>${escapeText(languages)}</dd>
+            </div>
+          </dl>
+          <div class="contact-row">
+            <a href="mailto:${escapeText(attorney.email)}">${escapeText(attorney.email)}</a>
+            <a href="tel:${escapeText(attorney.phone)}">${escapeText(attorney.phone)}</a>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+}
+
+function renderTrace(data) {
+  const trace = data.agent_trace || [];
+
+  if (!trace.length) {
+    fields.trace.innerHTML = "<li>Ready.</li>";
+    return;
+  }
+
+  fields.trace.innerHTML = trace
+    .map(
+      (step) => `
+        <li>
+          <span>${escapeText(step.name)}</span>
+          <p>${escapeText(step.summary)}</p>
+          <small>${escapeText(step.status)}</small>
+        </li>
+      `
+    )
+    .join("");
+}
+
+function renderResponse(data) {
+  renderBrief(data);
+  renderQuestions(data);
+  renderAttorneys(data);
+  renderTrace(data);
+  setAgentTrace(data.agent_trace || []);
+}
+
+async function sendMatter(message) {
+  createMessage("user", message);
+  const loading = createMessage("assistant", "", { loading: true });
+  setBusy(true);
+
+  try {
+    const response = await fetch("/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || "Review failed.");
     }
 
-    lastRequestTimestamp = now;
-
-    userMessage = messageElement.textContent.trim(); // Get user's message from chatElement
-
-    fetch("http://localhost:5000/chat", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            message: userMessage,
-        }),
-        timeout: 10000, // Adjust the timeout value as needed (in milliseconds)
-    })
-    .then((res) => res.json())
-    .then((data) => {
-        console.log(data);
-        const chatbotReply = data.reply;
-        
-        // Display the chatbot's reply in the chatbox
-        const chatbotResponseLi = createChatLi(chatbotReply, "incoming");
-        chatbox.appendChild(chatbotResponseLi);
-        chatbox.scrollTo(0, chatbox.scrollHeight);
-    })
-    .catch(() => {
-        messageElement.classList.add("error");
-        messageElement.textContent = "Oops! Something went wrong.";
-    })
-    .finally(() => chatbox.scrollTo(0, chatbox.scrollHeight));
+    loading.remove();
+    createMessage("assistant", data.reply || "No response returned.");
+    renderResponse(data);
+  } catch (error) {
+    loading.remove();
+    createMessage("assistant", error.message || "Connection failed. Please try again.");
+  } finally {
+    setBusy(false);
+    input.focus();
+  }
 }
 
-const handleChat = () => {
-  userMessage = chatInput.value.trim(); // Get user entered message and remove extra whitespace
-  if (!userMessage) return;
-
-  // Clear the input textarea and set its height to default
-  chatInput.value = "";
-  chatInput.style.height = `${inputInitHeight}px`;
-
-  // Append the user's message to the chatbox
-  chatbox.appendChild(createChatLi(userMessage, "outgoing"));
-  chatbox.scrollTo(0, chatbox.scrollHeight);
-
-  setTimeout(() => {
-      // Display "Thinking..." message while waiting for the response
-      const incomingChatLi = createChatLi("Here's my response: ", "incoming");
-      chatbox.appendChild(incomingChatLi);
-      chatbox.scrollTo(0, chatbox.scrollHeight);
-
-      // Send a POST request to the Flask server
-      fetch("http://localhost:5000/chat", { // Replace with the correct URL
-          method: "POST",
-          headers: {
-              "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-              message: userMessage,
-          }),
-      })
-      .then((res) => res.json())
-      .then((data) => {
-          console.log(data);
-          const chatbotReply = data.reply;
-
-          // Display the chatbot's reply in the chatbox
-          const chatbotResponseLi = createChatLi(chatbotReply, "incoming");
-          chatbox.appendChild(chatbotResponseLi);
-          chatbox.scrollTo(0, chatbox.scrollHeight);
-      })
-      .catch(() => {
-          // Handle errors
-          console.error("Error sending POST request.");
-      });
-  }, 600);
+async function loadHealth() {
+  try {
+    const response = await fetch("/api/health");
+    const data = await response.json();
+    modelChip.textContent = data.model || "Gemini 3.5 Flash";
+    runtimeChip.textContent = data.gemini_configured ? "Gemini connected" : "Local fallback";
+    runtimeChip.classList.toggle("muted", !data.gemini_configured);
+  } catch {
+    runtimeChip.textContent = "Backend offline";
+    runtimeChip.classList.add("error-chip");
+  }
 }
-chatInput.addEventListener("input", () => {
-    // Adjust the height of the input textarea based on its content
-    chatInput.style.height = `${inputInitHeight}px`;
-    chatInput.style.height = `${chatInput.scrollHeight}px`;
+
+function mountSampleMatters() {
+  const wrapper = document.createElement("div");
+  wrapper.className = "sample-row";
+  wrapper.setAttribute("aria-label", "Sample matters");
+
+  sampleMatters.forEach((matter) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "sample-button";
+    button.textContent = matter;
+    button.addEventListener("click", () => {
+      input.value = matter;
+      input.focus();
+    });
+    wrapper.appendChild(button);
+  });
+
+  form.insertAdjacentElement("beforebegin", wrapper);
+}
+
+form.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const message = input.value.trim();
+  if (!message) return;
+  input.value = "";
+  sendMatter(message);
 });
 
-chatInput.addEventListener("keydown", (e) => {
-    // If Enter key is pressed without Shift key and the window 
-    // width is greater than 800px, handle the chat
-    if(e.key === "Enter" && !e.shiftKey && window.innerWidth > 800) {
-        e.preventDefault();
-        handleChat();
-    }
+clearButton.addEventListener("click", () => {
+  input.value = "";
+  input.focus();
 });
 
-sendChatBtn.addEventListener("click", handleChat);
-closeBtn.addEventListener("click", () => document.body.classList.remove("show-chatbot"));
-chatbotToggler.addEventListener("click", () => document.body.classList.toggle("show-chatbot"));
+input.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+    form.requestSubmit();
+  }
+});
+
+mountSampleMatters();
+loadHealth();

@@ -1,203 +1,142 @@
 [
-    {
-      "Lawyer ID": 1,
-      "Lawyer's Name": "John Smith",
-      "Contact Information": {
-        "Email": "john.smith@example.com",
-        "Phone": "555-123-4567"
-      },
-      "Areas of Expertise": ["Criminal Defense"],
-      "Experience": 12
+  {
+    "Lawyer ID": 1,
+    "Lawyer's Name": "Maya Srinivasan",
+    "Role": "Senior personal injury attorney",
+    "Location": "Orlando, FL",
+    "Contact Information": {
+      "Email": "maya.srinivasan@lawyerup.example",
+      "Phone": "555-281-4407"
     },
-    {
-      "Lawyer ID": 2,
-      "Lawyer's Name": "Jane Doe",
-      "Contact Information": {
-        "Email": "jane.doe@example.com",
-        "Phone": "555-987-6543"
-      },
-      "Areas of Expertise":["Family Law"],
-      "Experience": 10
+    "Areas of Expertise": ["Personal Injury", "Auto Accidents", "Premises Liability"],
+    "Experience": 14,
+    "Languages": ["English", "Tamil"],
+    "Intake Notes": "Strong fit for collision, premises, and insurance-heavy injury matters."
+  },
+  {
+    "Lawyer ID": 2,
+    "Lawyer's Name": "Jordan Alvarez",
+    "Role": "Trial attorney",
+    "Location": "Tampa, FL",
+    "Contact Information": {
+      "Email": "jordan.alvarez@lawyerup.example",
+      "Phone": "555-394-1182"
     },
-    {
-      "Lawyer ID": 3,
-      "Lawyer's Name": "Robert Johnson",
-      "Contact Information": {
-        "Email": "robert.johnson@example.com",
-        "Phone": "555-234-5678"
-      },
-      "Areas of Expertise": ["Criminal Defense"],
-      "Experience": 15
+    "Areas of Expertise": ["Criminal Defense", "DUI (Driving Under the Influence)"],
+    "Experience": 12,
+    "Languages": ["English", "Spanish"],
+    "Intake Notes": "Handles first appearance, DUI citation, misdemeanor, and felony intake."
+  },
+  {
+    "Lawyer ID": 3,
+    "Lawyer's Name": "Priya Coleman",
+    "Role": "Family law attorney",
+    "Location": "Winter Park, FL",
+    "Contact Information": {
+      "Email": "priya.coleman@lawyerup.example",
+      "Phone": "555-612-9084"
     },
-    {
-      "Lawyer ID": 4,
-      "Lawyer's Name": "Emily Anderson",
-      "Contact Information": {
-        "Email": "emily.anderson@example.com",
-        "Phone": "555-345-6789"
-      },
-      "Areas of Expertise": ["Personal Injury"],
-      "Experience": 8
+    "Areas of Expertise": ["Family Law", "Divorce", "Child Custody"],
+    "Experience": 11,
+    "Languages": ["English", "Hindi"],
+    "Intake Notes": "Best for divorce, parenting plans, custody conflicts, and support questions."
+  },
+  {
+    "Lawyer ID": 4,
+    "Lawyer's Name": "Elena Brooks",
+    "Role": "Employment litigation attorney",
+    "Location": "Jacksonville, FL",
+    "Contact Information": {
+      "Email": "elena.brooks@lawyerup.example",
+      "Phone": "555-704-3196"
     },
-    {
-      "Lawyer ID": 5,
-      "Lawyer's Name": "Michael Wilson",
-      "Contact Information": {
-        "Email": "michael.wilson@example.com",
-        "Phone": "555-456-7890"
-      },
-      "Areas of Expertise": ["Real Estate Law"],
-      "Experience": 20
+    "Areas of Expertise": ["Employment Law", "Wrongful Termination", "Workplace Discrimination"],
+    "Experience": 13,
+    "Languages": ["English"],
+    "Intake Notes": "Good fit for retaliation, discrimination, wage, harassment, and termination matters."
+  },
+  {
+    "Lawyer ID": 5,
+    "Lawyer's Name": "Noah Bennett",
+    "Role": "Medical malpractice attorney",
+    "Location": "Miami, FL",
+    "Contact Information": {
+      "Email": "noah.bennett@lawyerup.example",
+      "Phone": "555-803-2271"
     },
-    {
-      "Lawyer ID": 6,
-      "Lawyer's Name": "Sarah Davis",
-      "Contact Information": {
-        "Email": "sarah.davis@example.com",
-        "Phone": "555-567-8901"
-      },
-      "Areas of Expertise": ["Family Law"],
-      "Experience": 9
+    "Areas of Expertise": ["Medical Malpractice", "Personal Injury", "Wrongful Death"],
+    "Experience": 17,
+    "Languages": ["English"],
+    "Intake Notes": "Prioritizes matters involving medical records, expert review, and hospital timelines."
+  },
+  {
+    "Lawyer ID": 6,
+    "Lawyer's Name": "Samira Haddad",
+    "Role": "Immigration attorney",
+    "Location": "Orlando, FL",
+    "Contact Information": {
+      "Email": "samira.haddad@lawyerup.example",
+      "Phone": "555-418-6503"
     },
-    {
-      "Lawyer ID": 7,
-      "Lawyer's Name": "David Brown",
-      "Contact Information": {
-        "Email": "david.brown@example.com",
-        "Phone": "555-678-9012"
-      },
-      "Areas of Expertise": ["Immigration Law"],
-      "Experience": 18
+    "Areas of Expertise": ["Immigration", "Family Visas", "Removal Defense"],
+    "Experience": 10,
+    "Languages": ["English", "Arabic", "French"],
+    "Intake Notes": "Handles visa, green card, asylum, family petition, and removal defense intake."
+  },
+  {
+    "Lawyer ID": 7,
+    "Lawyer's Name": "Marcus Reed",
+    "Role": "Business and contracts attorney",
+    "Location": "St. Petersburg, FL",
+    "Contact Information": {
+      "Email": "marcus.reed@lawyerup.example",
+      "Phone": "555-526-7719"
     },
-    {
-      "Lawyer ID": 8,
-      "Lawyer's Name": "Jennifer Miller",
-      "Contact Information": {
-        "Email": "jennifer.miller@example.com",
-        "Phone": "555-789-0123"
-      },
-      "Areas of Expertise": ["Personal Injury"],
-      "Experience": 13
+    "Areas of Expertise": ["Business Law", "Contract Disputes", "Entity Formation"],
+    "Experience": 15,
+    "Languages": ["English"],
+    "Intake Notes": "Routes contract, partnership, vendor, and new entity questions quickly."
+  },
+  {
+    "Lawyer ID": 8,
+    "Lawyer's Name": "Talia Morgan",
+    "Role": "Estate planning attorney",
+    "Location": "Sarasota, FL",
+    "Contact Information": {
+      "Email": "talia.morgan@lawyerup.example",
+      "Phone": "555-337-5402"
     },
-    {
-      "Lawyer ID": 9,
-      "Lawyer's Name": "Daniel White",
-      "Contact Information": {
-        "Email": "daniel.white@example.com",
-        "Phone": "555-890-1234"
-      },
-      "Areas of Expertise": ["Real Estate Law"],
-      "Experience": 14
+    "Areas of Expertise": ["Estate Planning", "Trusts", "Probate"],
+    "Experience": 16,
+    "Languages": ["English"],
+    "Intake Notes": "Good fit for wills, trusts, probate navigation, and estate administration."
+  },
+  {
+    "Lawyer ID": 9,
+    "Lawyer's Name": "Darius Kim",
+    "Role": "Real estate attorney",
+    "Location": "Kissimmee, FL",
+    "Contact Information": {
+      "Email": "darius.kim@lawyerup.example",
+      "Phone": "555-690-2458"
     },
-    {
-      "Lawyer ID": 10,
-      "Lawyer's Name": "Lisa Martinez",
-      "Contact Information": {
-        "Email": "lisa.martinez@example.com",
-        "Phone": "555-901-2345"
-      },
-      "Areas of Expertise": ["Family Law"],
-      "Experience": 11
+    "Areas of Expertise": ["Real Estate Law", "Landlord Tenant", "Property Disputes"],
+    "Experience": 9,
+    "Languages": ["English", "Korean"],
+    "Intake Notes": "Reviews lease, closing, landlord tenant, and property dispute facts."
+  },
+  {
+    "Lawyer ID": 10,
+    "Lawyer's Name": "Avery Stone",
+    "Role": "Intake strategy attorney",
+    "Location": "Remote intake",
+    "Contact Information": {
+      "Email": "avery.stone@lawyerup.example",
+      "Phone": "555-459-0328"
     },
-    {
-      "Lawyer ID": 11,
-      "Lawyer's Name": "William Taylor",
-      "Contact Information": {
-        "Email": "william.taylor@example.com",
-        "Phone": "555-012-3456"
-      },
-      "Areas of Expertise": ["Criminal Defense"],
-      "Experience": 16
-    },
-    {
-      "Lawyer ID": 12,
-      "Lawyer's Name": "Linda Harris",
-      "Contact Information": {
-        "Email": "linda.harris@example.com",
-        "Phone": "555-123-4567"
-      },
-      "Areas of Expertise": ["Divorce Law"],
-      "Experience": 9
-    },
-    {
-      "Lawyer ID": 13,
-      "Lawyer's Name": "James Wilson",
-      "Contact Information": {
-        "Email": "james.wilson@example.com",
-        "Phone": "555-234-5678"
-      },
-      "Areas of Expertise": ["Personal Injury"],
-      "Experience": 12
-    },
-    {
-      "Lawyer ID": 14,
-      "Lawyer's Name": "Karen Lewis",
-      "Contact Information": {
-        "Email": "karen.lewis@example.com",
-        "Phone": "555-345-6789"
-      },
-      "Areas of Expertise": ["Real Estate Law"],
-      "Experience": 17
-    },
-    {
-      "Lawyer ID": 15,
-      "Lawyer's Name": "Richard Turner",
-      "Contact Information": {
-        "Email": "richard.turner@example.com",
-        "Phone": "555-456-7890"
-      },
-      "Areas of Expertise": ["Criminal Defense"],
-      "Experience": 14
-    },
-    {
-      "Lawyer ID": 16,
-      "Lawyer's Name": "Susan Young",
-      "Contact Information": {
-        "Email": "susan.young@example.com",
-        "Phone": "555-567-8901"
-      },
-      "Areas of Expertise": ["Family Law"],
-      "Experience": 10
-    },
-    {
-      "Lawyer ID": 17,
-      "Lawyer's Name": "Matthew Scott",
-      "Contact Information": {
-        "Email": "matthew.scott@example.com",
-        "Phone": "555-678-9012"
-      },
-      "Areas of Expertise": ["Real Estate Law"],
-      "Experience": 19
-    },
-    {
-      "Lawyer ID": 18,
-      "Lawyer's Name": "Laura Adams",
-      "Contact Information": {
-        "Email": "laura.adams@example.com",
-        "Phone": "555-789-0123"
-      },
-      "Areas of Expertise": ["Personal Injury"],
-      "Experience": 13
-    },
-    {
-      "Lawyer ID": 19,
-      "Lawyer's Name": "Brian Foster",
-      "Contact Information": {
-        "Email": "brian.foster@example.com",
-        "Phone": "555-890-1234"
-      },
-      "Areas of Expertise": ["Criminal Defense"],
-      "Experience": 15
-    },
-    {
-      "Lawyer ID": 20,
-      "Lawyer's Name": "Mary Turner",
-      "Contact Information": {
-        "Email": "mary.turner@example.com",
-        "Phone": "555-901-2345"
-      },
-      "Areas of Expertise": ["Family Law"],
-      "Experience": 11
-    }
-  ]
-  
+    "Areas of Expertise": ["Personal Injury", "Family Law", "Criminal Defense"],
+    "Experience": 18,
+    "Languages": ["English", "Spanish"],
+    "Intake Notes": "Useful when a matter spans several practice areas and needs a first-pass review."
+  }
+]

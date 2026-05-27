@@ -1,114 +1,123 @@
 [
-    {
-      "Case ID": 1,
-      "Case Type": "Divorce",
-      "Description": "Legal dissolution of marriage.",
-      "Relevant Questions": [
-        "Do you and your spouse have children?",
-        "Have you and your spouse reached an agreement on asset division?",
-        "Are there any issues related to child custody?"
-      ],
-      "Recommended Lawyer ID": [10]
-    },
-    {
-      "Case ID": 2,
-      "Case Type": "DUI (Driving Under the Influence)",
-      "Description": "Legal case related to driving under the influence of alcohol or drugs.",
-      "Relevant Questions": [
-        "Were you arrested for DUI?",
-        "What was your blood alcohol content (BAC) at the time of arrest?",
-        "Do you have prior DUI convictions?"
-      ],
-      "Recommended Lawyer ID": [1]
-    },
-    {
-      "Case ID": 3,
-      "Case Type": "Immigration",
-      "Description": "Legal matters related to immigration status and visas.",
-      "Relevant Questions": [
-        "What is your current immigration status?",
-        "Are you seeking a family-based or employment-based visa?",
-        "Have you ever been deported or denied entry to the U.S.?"
-      ],
-      "Recommended Lawyer ID": [7]
-    },
-    {
-      "Case ID": 4,
-      "Case Type": "Personal Injury",
-      "Description": "Legal cases involving bodily harm or injury due to someone else's negligence.",
-      "Relevant Questions": [
-        "How were you injured?",
-        "Do you have medical records related to your injury?",
-        "Have you spoken to any insurance companies about the incident?"
-      ],
-      "Recommended Lawyer ID": [8]
-    },
-    {
-      "Case ID": 5,
-      "Case Type": "Criminal Defense",
-      "Description": "Legal defense in criminal cases, such as theft or assault.",
-      "Relevant Questions": [
-        "What are the charges against you?",
-        "Were you arrested or charged with a misdemeanor or felony?",
-        "Do you have any witnesses or evidence to support your defense?"
-      ],
-      "Recommended Lawyer ID": [11]
-    },
-    {
-      "Case ID": 6,
-      "Case Type": "Family Law",
-      "Description": "Legal matters related to family issues, including divorce and child custody.",
-      "Relevant Questions": [
-        "Are you married and seeking a divorce?",
-        "Do you need assistance with child custody arrangements?",
-        "Have you and your spouse reached any agreements regarding property division?"
-      ],
-      "Recommended Lawyer ID": [16]
-    },
-    {
-      "Case ID": 7,
-      "Case Type": "Estate Planning",
-      "Description": "Legal matters related to wills, trusts, and estate management.",
-      "Relevant Questions": [
-        "Do you have a will or trust in place?",
-        "Are you interested in minimizing estate taxes?",
-        "Do you want to appoint a guardian for your children?"
-      ],
-      "Recommended Lawyer ID": [9]
-    },
-    {
-      "Case ID": 8,
-      "Case Type": "Business Law",
-      "Description": "Legal issues involving business contracts, partnerships, and disputes.",
-      "Relevant Questions": [
-        "Are you involved in a business contract dispute?",
-        "Do you need assistance with business formation?",
-        "Have you received a cease and desist letter?"
-      ],
-      "Recommended Lawyer ID": [14]
-    },
-    {
-      "Case ID": 9,
-      "Case Type": "Employment Law",
-      "Description": "Legal matters related to employment contracts, discrimination, and wrongful termination.",
-      "Relevant Questions": [
-        "Have you been wrongfully terminated?",
-        "Do you have an employment contract in place?",
-        "Have you experienced workplace discrimination?"
-      ],
-      "Recommended Lawyer ID":[4]
-    },
-    {
-      "Case ID": 10,
-      "Case Type": "Medical Malpractice",
-      "Description": "Legal cases involving negligence by healthcare professionals.",
-      "Relevant Questions": [
-        "What kind of medical procedure resulted in harm or injury?",
-        "Do you have medical records to support your case?",
-        "Have you spoken to the healthcare provider about the incident?"
-      ],
-      "Recommended Lawyer ID": [8]
-    }
-   
-  ]
-  
+  {
+    "Case ID": 1,
+    "Case Type": "Personal Injury",
+    "Description": "Injuries caused by crashes, falls, unsafe premises, or another party's negligence.",
+    "Relevant Questions": [
+      "When and where did the injury happen?",
+      "Did you receive medical care or create an incident report?",
+      "Has an insurance company, property owner, or driver contacted you?"
+    ],
+    "Recommended Lawyer ID": [1, 5, 10]
+  },
+  {
+    "Case ID": 2,
+    "Case Type": "Medical Malpractice",
+    "Description": "Potential harm connected to medical treatment, diagnosis, surgery, medication, or hospital care.",
+    "Relevant Questions": [
+      "What treatment or diagnosis caused concern?",
+      "When did you first discover the harm?",
+      "Do you have records, bills, test results, or discharge notes?"
+    ],
+    "Recommended Lawyer ID": [5, 1]
+  },
+  {
+    "Case ID": 3,
+    "Case Type": "DUI (Driving Under the Influence)",
+    "Description": "Traffic stops, arrests, license issues, or court dates connected to alleged impaired driving.",
+    "Relevant Questions": [
+      "When is your next court date or license deadline?",
+      "Were breath, blood, or field sobriety tests used?",
+      "Is this your first DUI-related charge?"
+    ],
+    "Recommended Lawyer ID": [2, 10]
+  },
+  {
+    "Case ID": 4,
+    "Case Type": "Criminal Defense",
+    "Description": "Charges, investigations, warrants, arrests, or police contact requiring defense review.",
+    "Relevant Questions": [
+      "What charge or investigation are you facing?",
+      "Were you arrested, cited, or served paperwork?",
+      "Do you have a court date, warrant, or bond condition?"
+    ],
+    "Recommended Lawyer ID": [2, 10]
+  },
+  {
+    "Case ID": 5,
+    "Case Type": "Family Law",
+    "Description": "Custody, support, parenting plans, domestic agreements, and related family disputes.",
+    "Relevant Questions": [
+      "Are there children, custody orders, or support obligations involved?",
+      "Has anything already been filed in court?",
+      "What outcome are you trying to protect first?"
+    ],
+    "Recommended Lawyer ID": [3, 10]
+  },
+  {
+    "Case ID": 6,
+    "Case Type": "Divorce",
+    "Description": "Marriage dissolution, property division, alimony, custody, and separation issues.",
+    "Relevant Questions": [
+      "Has either spouse filed for divorce?",
+      "Are custody, support, property, or business assets disputed?",
+      "Do you have a preferred timeline for separation or filing?"
+    ],
+    "Recommended Lawyer ID": [3, 10]
+  },
+  {
+    "Case ID": 7,
+    "Case Type": "Immigration",
+    "Description": "Visa, green card, citizenship, asylum, removal, or family petition matters.",
+    "Relevant Questions": [
+      "What is your current immigration status?",
+      "Is there a filing deadline, interview, hearing, or removal date?",
+      "Are you seeking family, employment, humanitarian, or student-related help?"
+    ],
+    "Recommended Lawyer ID": [6]
+  },
+  {
+    "Case ID": 8,
+    "Case Type": "Employment Law",
+    "Description": "Wrongful termination, discrimination, wage issues, harassment, retaliation, or workplace contracts.",
+    "Relevant Questions": [
+      "What happened at work, and when did it happen?",
+      "Do you have messages, HR notes, pay records, or a written contract?",
+      "Have you reported the issue internally or to an agency?"
+    ],
+    "Recommended Lawyer ID": [4]
+  },
+  {
+    "Case ID": 9,
+    "Case Type": "Business Law",
+    "Description": "Contracts, entity formation, partnership disputes, vendor conflicts, or business risk review.",
+    "Relevant Questions": [
+      "What agreement, entity, or business relationship is involved?",
+      "Is there a signed contract or written communication?",
+      "Are you trying to prevent a dispute or respond to one?"
+    ],
+    "Recommended Lawyer ID": [7]
+  },
+  {
+    "Case ID": 10,
+    "Case Type": "Estate Planning",
+    "Description": "Wills, trusts, probate, estate administration, guardianship planning, and asset transfer questions.",
+    "Relevant Questions": [
+      "Do you already have a will, trust, or probate case?",
+      "Which assets, beneficiaries, or family members are involved?",
+      "Is there a recent death, incapacity, or urgent filing deadline?"
+    ],
+    "Recommended Lawyer ID": [8]
+  },
+  {
+    "Case ID": 11,
+    "Case Type": "Real Estate Law",
+    "Description": "Closings, property disputes, lease issues, landlord tenant conflicts, and title concerns.",
+    "Relevant Questions": [
+      "Is this about a purchase, sale, lease, eviction, or property dispute?",
+      "Do you have a contract, notice, lease, or title document?",
+      "What deadline or closing date is approaching?"
+    ],
+    "Recommended Lawyer ID": [9]
+  }
+]
